@@ -1,0 +1,8 @@
+# Local runtime data — never commit browser sessions, personal settings, or diagnostics.
+__pycache__/
+*.log
+config.json
+gemini-chrome/
+gemini-debug/
+captures/
+
