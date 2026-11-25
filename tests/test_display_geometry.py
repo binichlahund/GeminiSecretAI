@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from display_geometry import DisplayGeometry, indicator_bounds, selection_bounds
+from geminisecretai.display import DisplayGeometry, indicator_bounds, selection_bounds
 
 
 class DisplayGeometryTests(unittest.TestCase):

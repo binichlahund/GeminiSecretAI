@@ -1,7 +1,1 @@
-fastapi
-uvicorn
-playwright
-customtkinter
-pyperclip
-pillow
-
+-e .

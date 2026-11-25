@@ -1,6 +1,5 @@
-' Starts Gemini Hotkey without a console window. Logs are written beside this file.
+' Legacy shortcut compatibility. Use Start GeminiSecretAI.vbs.
 Set sh = CreateObject("WScript.Shell")
 dir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
-sh.CurrentDirectory = dir
-sh.Run "pythonw """ & dir & "\gemini_hotkey.py""", 0, False
-
+q = Chr(34)
+sh.Run "wscript.exe " & q & dir & "\Start GeminiSecretAI.vbs" & q, 0, False

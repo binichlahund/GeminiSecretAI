@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body>
+<button aria-label="New chat" onclick="resetChat()">New chat</button>
+<main id="history"></main>
+<div class="input-area" id="composer">
+  <div role="textbox" contenteditable="true" aria-label="Enter a prompt"></div>
+  <button aria-label="Add files" aria-haspopup="menu" onclick="openMenu()">+</button>
+  <button data-test-id="send-button" aria-label="Send" onclick="submitQuestion()">Send</button>
+</div>
+<script>
+window.sends = 0; window.resets = 0;
+window.copyMode = "clean"; window.language = "en"; window.uploadDelay = 80;
+const editor = document.querySelector('[contenteditable]');
+const composer = document.querySelector('#composer');
+function resetChat() {
+  window.resets++;
+  document.querySelector('#history').innerHTML = '';
+  editor.innerText = '';
+  document.querySelectorAll('input[type=file], .attachment, #upload-menu').forEach(n => n.remove());
+  document.querySelector('[data-test-id=send-button]').disabled = false;
+}
+function openMenu() {
+  const menu = document.createElement('div'); menu.id = 'upload-menu'; menu.role = 'menu';
+  menu.innerHTML = '<button role="menuitem"><span>' +
+    (window.language === 'da' ? 'Filer' : 'Files') + '</span></button>';
+  composer.append(menu);
+  menu.querySelector('button').onclick = () => {
+    const file = document.createElement('input');
+    file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+    composer.append(file);
+    file.onchange = () => {
+      menu.remove();
+      const send = document.querySelector('[data-test-id=send-button]'); send.disabled = true;
+      const preview = document.createElement('div'); preview.className = 'attachment';
+      preview.innerHTML = '<span role="progressbar">Uploading</span>';
+      composer.append(preview);
+      setTimeout(() => {
+        preview.innerHTML = '<img class="attachment-thumbnail" alt="attached image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg=="><span></span>';
+        preview.querySelector('span').textContent = file.files[0].name;
+        send.disabled = false;
+      }, window.uploadDelay);
+    };
+    file.click();
+  };
+}
+function submitQuestion() {
+  window.sends++;
+  const question = editor.innerText;
+  if (window.submissionFails) return;
+  setTimeout(() => { editor.innerText = ''; document.querySelectorAll('.attachment').forEach(n => n.remove()); }, 350);
+  const stop = document.createElement('button'); stop.ariaLabel = 'Stop response'; stop.textContent = 'Stop';
+  composer.append(stop);
+  const model = document.createElement('model-response');
+  model.innerHTML = '<div class="response-header">Geminis svar</div><message-content>Thinking</message-content>';
+  document.querySelector('#history').append(model);
+  const body = model.querySelector('message-content');
+  setTimeout(() => {
+    const chemical = question.includes('CHEMISTRY');
+    body.innerHTML = chemical ?
+      '<span class="katex"><span class="katex-mathml" style="position:absolute;clip:rect(1px,1px,1px,1px)"><math><semantics><msub><mi>CH</mi><mn>4</mn></msub><annotation encoding="application/x-tex">CH_4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true">𝐶 𝐻 4 CH4</span></span>' :
+      '4';
+    stop.remove();
+    const copy = document.createElement('button'); copy.ariaLabel = 'Copy response'; copy.textContent = 'Copy';
+    copy.onclick = () => navigator.clipboard.writeText(
+      window.copyMode === 'dirty' ? 'CH4 CH4' : chemical ? 'CH4' : '4');
+    model.append(copy);
+  }, window.generationDelay || 250);
+}
+</script></body></html>

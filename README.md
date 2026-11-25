@@ -1,211 +1,156 @@
 # GeminiSecretAI
 
-A Windows desktop shortcut for asking Gemini about text or a selected part of
-your screen. Answers are copied to your clipboard, ready to paste into another app.
+A Windows utility for asking Gemini about text, screenshots, and image files. Answers go straight to your clipboard. It uses the Gemini website in a dedicated Chrome or Edge session; no API key is required.
 
-The app uses the Gemini website through a separate Chrome or Edge profile.
-No Gemini API key is required. After signing in, the browser runs headlessly by
-default. Minimize the control window to keep both global hotkeys active.
+## Install and start
 
-## Features
+1. Extract the project into a permanent folder you can write to.
+2. Install **Python 3.11 or later** with Python added to PATH, and **Google Chrome or Microsoft Edge**.
+3. Double-click **Install.bat** and wait for installation to finish.
+4. Double-click **Start GeminiSecretAI.vbs**. This is the everyday launcher; it opens the controls without a console.
+5. On **Home**, choose **Open login**, sign in to Google in the dedicated browser, then choose **Run headlessly**. Let the app switch browser modes rather than closing the login browser yourself.
 
-- Text questions from any app using a configurable global hotkey.
-- Image questions using a second hotkey to select a screen area.
-- Existing image uploads from the control window.
-- Saved instructions included with every text or image question.
-- CustomTkinter control window for keybinds, instructions, and login.
-- Colored status dot at the bottom-right of the active monitor.
-- Multi-monitor capture with physical-pixel positioning for Windows display scaling.
-- Optional startup with Windows.
+Ordinary startup always shows the controls. Subsequent launches reuse your saved login and run Gemini headlessly by default. **Ready** means the Gemini page has a usable prompt editor; a responding local service alone does not count as ready.
 
-## Installation and first login
+Keep the installation folder in place. The installer registers the local Python package in editable mode; rerun **Install.bat** and recreate autostart if you move the folder. The launcher's location is resolved automatically, including paths with spaces and shortcuts launched from another working directory.
 
-1. Download this repository using **Code → Download ZIP**, then extract it.
-2. Install Python 3 for Windows with Python added to PATH.
-3. Install Google Chrome or Microsoft Edge.
-4. Run `setup.bat` to install Python dependencies and Playwright browser files.
-5. Run `start_hidden.vbs` to launch without a terminal window.
-6. Sign in to Gemini in the browser window that opens on first launch.
-   Complete any Google verification yourself.
-7. In the control window, click **Run Gemini headlessly**.
+## Everyday use
 
-For later sign-ins, click **Open login window**, sign in, and then click
-**Run Gemini headlessly**. Let the app switch modes rather than closing
-the login browser manually.
+| Default shortcut | Action |
+| --- | --- |
+| Ctrl+Alt+Space | Begin typing a text question; press again to send |
+| Ctrl+Alt+I | Select a screen area and send it as an image |
+| Ctrl+Alt+F12 | Exit the app, including while hidden |
 
-## Text questions
+Your existing configured shortcuts take precedence over these defaults.
 
-The default text hotkey is **Ctrl+Alt+Space**.
+For text questions, type after the first shortcut press. Backspace edits, Enter adds a line break, and Esc cancels. Recorded typing is kept out of the active app by default. After the answer arrives, paste it with **Ctrl+V**. The app handles one question at a time.
 
-1. Press the text hotkey to begin recording.
-2. Type your question. By default, those keystrokes stay out of the active app.
-3. Press the same hotkey again to send the question.
-4. Wait for the green dot, then paste the answer with **Ctrl+V**.
+On dead-key layouts, use **^ then Space** for a literal caret, as in `2^3` or `SO4^2-`. An accent followed by a compatible letter produces an accented character, such as `^` then `e` → `ê`. Backspace cancels a pending accent before deleting recorded text; cancellation or a new recording clears pending accents. Translation leaves Windows' dead-key state unchanged. Physical keyboard checks are still needed for your layout, particularly custom layouts and IMEs.
 
-**Backspace** edits the recorded prompt, **Enter** adds a line break, and **Esc**
-cancels recording. The app handles one question at a time.
+For screen questions, drag around the question and release to send. **Esc** cancels selection. Home also offers **Capture screenshot** and **Upload image**. Temporary captures are removed after completion or failure; uploaded originals are left untouched. The file picker offers PNG, JPEG, WebP, GIF, and BMP; Gemini's own upload support still applies.
 
-## Screenshots and image questions
+**Cancel question** stops recording, selection, or an active request. Cancelled and late results are prevented from replacing your clipboard. Uncertain sends are not automatically retried.
 
-The default image hotkey is **Ctrl+Alt+I**.
+## Find your way around
 
-1. Press the image hotkey from any app.
-2. Drag across the area you want Gemini to read.
-3. Release the mouse to capture and submit it.
-4. Wait for the green dot, then paste the answer with **Ctrl+V**.
+- **Home:** separate connection and request status, capture/upload actions, login/reconnect, current shortcuts, and Hide app.
+- **Settings → Shortcuts:** edit all three shortcuts and save them immediately. Conflicting, unsupported, and Windows-reserved combinations are rejected with an explanation. Show status dot applies and saves immediately.
+- **Settings → Instructions:** edit the instructions included with text and images, enable/disable them, save, or restore the built-in answer-only prompt. Custom instructions are retained when disabled. Saving an empty prompt restores the default.
+- **Settings → Advanced:** local port, request timeout, and typing behavior. Connection changes require a restart.
+- **Help:** usage, first sign-in, hidden-mode guidance, and buttons for logs, the project folder, and this README.
 
-For example, capturing an image of `2 + 2` asks Gemini to solve the visible task.
-Press **Esc** to cancel selection.
+The interface uses a matte dark palette, compact navigation, keyboard focus indicators, and scrollable pages. Narrow windows stack the Home actions vertically. Settings display unsaved changes, validation failures, and save confirmation inline.
 
-You can also use **Capture area** or **Upload image** in the control window.
-The upload dialog offers PNG, JPG, JPEG, WebP, GIF, and BMP files; acceptance
-also depends on Gemini's current upload support.
+Saved instructions are prepended to the website's composer; they are not a separate API system-message role. The default asks for one plain answer without greetings, explanations, attachment names, or image IDs. Math and chemistry use notation such as `x^2` and `CH4`.
 
-Each image request opens a fresh Gemini chat. Text requests reuse the loaded
-conversation. Saved instructions accompany both request types.
+## Hidden mode, the dot, and exiting
 
-Temporary screen captures are removed after the request finishes or fails.
-Images selected from existing files are left in place.
+Run Gemini headlessly, then choose **Hide app** on Home. The controls and taskbar entry disappear. Text/image shortcuts and clipboard delivery keep working. A screenshot selection briefly shows its overlay; capture or cancellation removes it. There is no tray icon or replacement window. Runtime errors are logged without reopening the controls.
 
-## Changing the keybinds
+The current exit shortcut is explained beside Hide app. It works when visible, minimized, or hidden and fires once per press. Exiting cancels requests/captures, blocks late clipboard writes, removes the dot, closes the owned bridge/browser, stops the keyboard hook, and releases the instance guard. Exit and relaunch to see settings again. Closing the normal window or choosing **Quit** also exits. The process remains visible in Task Manager, which can terminate it as usual; the bridge retains its client-loss cleanup.
 
-In **KEYBINDS**, edit **TEXT ANSWER** and **IMAGE ANSWER**, then click
-**Save keybinds**. Both take effect immediately and are saved for future launches.
+**Show status dot** can be changed at any time, including during a request. Off hides it immediately; on shows the current active state. Expired result indicators do not return. Muted red indicates recording or an error, amber indicates waiting, and green indicates a copied answer; Home/logs provide the detailed state.
 
-Supported examples: `ctrl+alt+space`, `ctrl+shift+f9`, `ctrl+alt+i`, and `f9`.
-Use different shortcuts for text and images.
+Capture and dot placement retain physical-pixel, DPI-aware geometry across the Windows virtual desktop, including monitors above or left of the main display. Fully restart after updating display-related code.
 
-The control window can stay minimized. Closing it or clicking **Quit app** exits
-the app; there is currently no system-tray icon.
-
-## System prompt
-
-Write your standing instructions in **SYSTEM PROMPT** and click
-**Save system prompt**. For example:
+## Files and personal data
 
 ```text
-Answer concisely. For a simple calculation, return only the result.
+GeminiHotkey/                     # The folder can keep its existing name
+  Start GeminiSecretAI.vbs       # Run this every day
+  Install.bat                   # Install/update dependencies
+  README.md
+  requirements.txt
+  pyproject.toml
+  src/geminisecretai/            # Application source and answer_dom.js asset
+  tests/                        # Regression tests and local browser fixtures
+  scripts/                      # Optional restart/autostart and developer launcher
+  data/                         # Personal runtime data; excluded from source control
+  gemini-chrome/                # Existing login profile, retained if present
+  gemini_hotkey.py               # Legacy compatibility wrapper
+  start_hidden.vbs               # Legacy compatibility wrapper
 ```
 
-These instructions are prepended to each question as text in the Gemini web
-composer. They do not use a separate API system-message role. Clear and save the
-field to disable them.
+Runtime locations:
 
-## Status dot
-
-| Color | Meaning |
+| Location | Contents |
 | --- | --- |
-| Red | Recording a text question |
-| Orange | Waiting for Gemini, including image analysis |
-| Green | Answer copied to the clipboard |
-| Purple | Request failed; see the control window or logs |
+| `data/config.json` | Shortcuts, prompt, dot preference, and advanced settings |
+| `data/profile.json` | Pointer to the browser profile, without credentials |
+| `data/browser/` | Browser profile for a fresh installation |
+| `gemini-chrome/` | Existing installations' browser profile; never moved by migration |
+| `data/logs/` | Desktop and bridge logs |
+| `data/captures/` | Temporary screenshots |
+| `data/debug/` | Browser failure diagnostics |
+| `data/legacy/` | Preserved originals and legacy diagnostic files |
 
-The dot appears near the bottom-right of the active monitor's work area,
-above the taskbar. Set `"dot": false` in `config.json` to hide it.
+On upgrade, quit the old version before replacing source files. Keep all personal data, run **Install.bat**, then launch the new main VBS file. Startup copies a legacy root `config.json` byte for byte, verifies it, and archives the original under `data/legacy/`. If a new config already exists, neither config is overwritten. Normal settings loading adds missing defaults while preserving configured values and nonempty custom prompts. An unreadable legacy config is left intact and reported.
 
-## Display scaling and multiple monitors
+Existing `gemini-chrome/` login data stays exactly where it is, and its location is pinned. Old logs/captures/debug files are archived without replacing existing files. A locked legacy log remains in place until a later startup can archive it. Nothing deletes or resets your login. Sign in separately on another PC rather than copying browser cookies.
 
-The capture overlay covers the Windows virtual desktop, including screens to
-the left or above the main display. Overlay placement, cursor selection, and
-screenshot bounds use physical pixels to avoid a partial overlay or misplaced
-dot on scaled displays.
+Prompts and selected images are sent to Google through Gemini's website. Browser profiles, settings, logs, screenshots, and captures are ignored by source control. Diagnostics can contain question or page content.
 
-The display-scaling fix requires `display_geometry.py` beside
-`gemini_hotkey.py`. Fully quit and relaunch after an update: DPI awareness
-is configured when the Python process starts.
+## Optional startup and maintenance
 
-## Updating or using another PC
+- **scripts/Enable autostart.bat:** creates a Windows Startup shortcut to the main launcher. It updates an owned legacy Gemini Hotkey shortcut rather than adding a duplicate. Remove that shortcut from `shell:startup` to disable autostart.
+- **scripts/Restart.bat:** requests a clean restart of this installation. It does not kill an unrelated process using the configured port.
+- `start_hidden.vbs` and `gemini_hotkey.py` remain simple compatibility wrappers for existing shortcuts. Use **Start GeminiSecretAI.vbs** for new shortcuts.
 
-1. Quit the running app using **Quit app**.
-2. Download and extract the latest repository.
-3. Replace the source files in your existing app folder, including new files
-   such as `display_geometry.py`.
-4. Run `setup.bat` if dependencies have changed.
-5. Start `start_hidden.vbs` again.
+A single-instance guard prevents duplicate clients. The bridge listens on `127.0.0.1`, requires the client's ownership token for mutations, and closes its owned browser after client loss. An occupied port is reported rather than terminating its owner.
 
-Keep your existing `config.json` and `gemini-chrome` folder when updating the
-same PC. On another PC, sign in separately rather than copying browser cookies.
+## Development
 
-`restart.bat` stops the bridge listening on the default port **8001** and
-launches the app. Quit the existing control window first to avoid duplicate
-hotkey listeners. If you changed `bridge_port`, the script still targets 8001.
+Install with **Install.bat** or `python -m pip install -e .`. Normal package imports work without changing `sys.path` or relying on the current directory. `python -m geminisecretai` starts the app.
 
-To launch automatically at Windows sign-in, run `install_autostart.bat`.
-To disable it, remove the **Gemini Hotkey** shortcut from the Windows Startup folder.
+| Module under `src/geminisecretai/` | Responsibility |
+| --- | --- |
+| `ui.py` | Presentation, navigation, responsive layout, keyboard access |
+| `client.py` | Application controller, clipboard delivery, shutdown |
+| `settings.py`, `paths.py` | Defaults, shortcut validation, persistence, migration |
+| `hotkeys.py` | Windows keyboard hook and key translation |
+| `capture.py`, `display.py` | File/screen selection and DPI-aware geometry |
+| `bridge.py` | Owned service, browser/session lifecycle |
+| `browser.py`, `answer_dom.js` | Upload, generation completion, answer extraction |
+| `requests.py`, `instance.py` | Cancellation/deadlines and instance/restart guards |
+| `preview.py` | UI preview without Gemini or global hooks |
 
-## Configuration
+Run regression tests from the project folder:
 
-`config.json` is created automatically. Edit it while the app is closed, or use
-the UI for keybinds and the system prompt.
+```powershell
+python -m unittest discover -s tests -p "test_*.py" -v
+```
 
-| Setting | Default | Purpose |
-| --- | --- | --- |
-| `hotkey` | `ctrl+alt+space` | Start/send text recording |
-| `image_hotkey` | `ctrl+alt+i` | Start screen-area selection |
-| `system_prompt` | Empty | Instructions included with every question |
-| `dot` | `true` | Show the status dot |
-| `suppress_keys` | `true` | Keep recorded typing out of the active app |
-| `bridge_port` | `8001` | Local HTTP bridge port |
-| `request_timeout` | `300` | Client request timeout, in seconds |
+Browser tests use installed Chrome/Edge, local fixtures, and temporary profiles. They do not contact Gemini or use your login. Coverage includes repeated uploads, Danish/English menus, formula extraction, delayed generation, cancellation/disconnects, hidden/minimized windows, hotkey debounce/conflicts, dot toggling, late-answer suppression, cleanup, data migration, and package imports from another directory.
 
-The legacy `show_window_on_start` setting is still written to the config but
-is not currently used; the control window opens on launch.
+For a visual preview without a browser or global hooks:
+
+```powershell
+python -m geminisecretai.preview --size 700x700
+python -m geminisecretai.preview --scale 2 --size 440x440
+```
+
+The preview uses disposable settings. Its save actions do not affect your configuration. Scale arguments simulate application scaling; they do not change Windows display settings.
+
+`python -u tests/live_check.py` is an optional live integration check. It uses the dedicated Gemini login and sends arithmetic, chemistry, and image questions. Close the app first.
+
+Manual release checks should include live text/image answers, five consecutive uploads, cancellation followed by another question, expired login/reconnection, native global shortcuts in visible/minimized/hidden states, held exit keys, Task Manager termination, clean relaunch, and capture/dot placement on real mixed-DPI monitors at 125%, 150%, and 200%. Automated mocks and application-scale previews do not replace those hardware checks.
 
 ## Troubleshooting
 
-**Overlay does not reach the edges or the dot is misplaced:** update all source
-files, fully quit the old app, and relaunch. Geometry checks can be run with
-`python -m unittest -v test_display_geometry`; mixed-DPI hardware should also
-be checked manually.
+If disconnected, choose **Run headlessly**. If sign-in expired, choose **Open login**, complete sign-in, then **Run headlessly**. If a question stalls, cancel it before trying again. Open the logs from Help for details.
 
-**Login expired:** use **Open login window**, complete sign-in, then click
-**Run Gemini headlessly**.
+The app automates Gemini's web UI. Website changes can require selector updates; Gemini generation and network time also affect speed. Answer extraction selects one canonical representation of mathematical expressions to avoid duplicated rendered/accessible formulas. The bridge logs request-stage timings for diagnosing slow requests.
 
-**A request fails, upload stops, or an answer is incomplete:** inspect
-`gemini_hotkey.log`, `gemini_bridge.log`, and screenshots in `gemini-debug`.
-The app automates Gemini's web UI, so site changes can break selectors.
-Response completion uses a text-stability heuristic and may mistake a pause
-in generation for the end of an answer.
+Advanced environment overrides, read when the bridge starts:
 
-**Slow answers:** response time includes Gemini's generation and web-page
-handling. To inspect the session and its model settings, launch with
-`GEMINI_RUN_VISIBLE=1`. Available model controls depend on the Gemini account.
-
-These environment variables are read when the bridge starts:
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `GEMINI_RUN_VISIBLE` | `0` | Set to `1` to show the controlled browser |
-| `GEMINI_BROWSER` | Auto-detect | Path to Chrome or Edge |
-| `GEMINI_PORT` | `9223` | Browser debugging port, separate from the HTTP bridge |
-| `GEMINI_MAX_WAIT` | `180` | Response timeout in seconds |
-| `GEMINI_STABLE_SECONDS` | `0.8` | Unchanged-text interval used to detect completion |
-| `GEMINI_INPUT` | Built-in selector | Override the prompt-editor CSS selector |
-| `GEMINI_ANSWER` | `model-response message-content` | Override the answer CSS selector |
-| `GEMINI_SEND` | Built-in selector | Override the send-button CSS selector |
-
-## Local data
-
-Prompts and selected images are sent to Google Gemini through its website.
-The local HTTP bridge listens on `127.0.0.1`.
-
-The dedicated `gemini-chrome` folder holds the Google browser session.
-`config.json` holds personal settings and saved instructions. Logs and debug
-screenshots can contain request details or page content. These files, captures,
-and Python caches are excluded by `.gitignore`.
-
-## Source files
-
-| File | Role |
+| Variable | Default / purpose |
 | --- | --- |
-| `gemini_hotkey.py` | UI, global keybinds, screen capture, clipboard |
-| `display_geometry.py` | Windows DPI awareness and physical display coordinates |
-| `gemini_server.py` | FastAPI bridge and Playwright Gemini automation |
-| `test_display_geometry.py` | Display-coordinate regression checks |
-| `requirements.txt` | Python dependencies |
-| `setup.bat` | Dependency installation |
-| `start_hidden.vbs` | Launch without a console |
-| `restart.bat` | Restart the default local bridge and launch the app |
-| `install_autostart.bat` | Optional Windows Startup shortcut |
+| `GEMINI_RUN_VISIBLE` | `0`; `1` shows the controlled browser for diagnosis |
+| `GEMINI_BROWSER` | Auto-detected; optional Chrome/Edge executable path |
+| `GEMINI_PORT` | Auto-allocated browser debugging port |
+| `GEMINI_MAX_WAIT` | `180` seconds for the complete browser request |
+| `GEMINI_STABLE_SECONDS` | `4`; fallback quiet period, minimum 2 seconds |
+| `GEMINI_INPUT`, `GEMINI_ANSWER`, `GEMINI_SEND` | Optional composer/answer/send CSS selector overrides |
 
 Inspired by [Thyxo/SecretAI](https://github.com/Thyxo/SecretAI/).

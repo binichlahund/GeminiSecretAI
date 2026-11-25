@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geminisecretai"
+version = "0.2.0"
+description = "A Windows hotkey utility for Gemini text and image questions."
+requires-python = ">=3.11"
+dependencies = ["fastapi", "uvicorn", "playwright", "customtkinter", "pyperclip", "pillow"]
+
+[project.gui-scripts]
+geminisecretai = "geminisecretai.client:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+geminisecretai = ["answer_dom.js"]

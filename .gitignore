@@ -2,7 +2,12 @@
 __pycache__/
 *.log
 config.json
+config.tmp
 gemini-chrome/
 gemini-debug/
 captures/
-
+data/
+*.egg-info/
+build/
+dist/
+.venv/
