@@ -12,6 +12,12 @@ import time
 import urllib.error
 import urllib.request
 
+# Configure DPI before CustomTkinter/Tk initializes any windows or screen metrics.
+from display_geometry import (
+    DisplayGeometry, enable_dpi_awareness, indicator_bounds, selection_bounds,
+)
+enable_dpi_awareness()
+
 import pyperclip
 import tkinter as tk
 from tkinter import filedialog
@@ -54,6 +60,7 @@ cfg = load_config()
 BRIDGE = f"http://127.0.0.1:{cfg['bridge_port']}"
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
+display = DisplayGeometry()
 user32.GetAsyncKeyState.restype = ctypes.c_short
 user32.SetWindowsHookExW.restype = ctypes.c_void_p
 user32.SetWindowsHookExW.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, wt.DWORD]
@@ -165,14 +172,16 @@ class Dot:
         root.overrideredirect(True); root.attributes("-topmost", True); root.attributes("-transparentcolor", "black"); root.configure(bg="black")
         self.canvas = tk.Canvas(root, width=16, height=16, bg="black", highlightthickness=0); self.canvas.pack()
         self.oval = self.canvas.create_oval(2, 2, 14, 14, fill=COLORS["ok"], outline="")
-        root.geometry("16x16-30-70"); root.withdraw()
+        root.geometry("16x16"); root.withdraw()
 
     def show(self, color, milliseconds=None):
         self.token += 1
         if not cfg["dot"]:
             self.root.withdraw(); return
         self.canvas.itemconfig(self.oval, fill=color)
+        bounds = indicator_bounds(display.active_work_area())
         self.root.deiconify()
+        display.place(self.root, bounds, no_activate=True)
         if milliseconds:
             token = self.token
             self.root.after(milliseconds, lambda: self.root.withdraw() if token == self.token else None)
@@ -516,9 +525,16 @@ class Window:
         if state != IDLE:
             self.set_message("Wait for the current request to finish before capturing an image.")
             return
+        if getattr(self, "capture_overlay", None) is not None:
+            return
         self.set_message("Drag over the part of the screen you want Gemini to answer.")
+        desktop = display.desktop_bounds()
         overlay = tk.Toplevel(self.root)
-        overlay.attributes("-fullscreen", True)
+        self.capture_overlay = overlay
+        overlay.withdraw()
+        overlay.overrideredirect(True)
+        left, top, right, bottom = desktop
+        overlay.geometry(f"{right - left}x{bottom - top}+0+0")
         overlay.attributes("-topmost", True)
         overlay.attributes("-alpha", 0.22)
         overlay.configure(bg="black")
@@ -527,30 +543,38 @@ class Window:
         selection = {"start": None, "rect": None}
 
         def begin(event):
-            selection["start"] = (event.x_root, event.y_root)
+            selection["start"] = display.cursor_position()
             selection["rect"] = canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="#7c5cff", width=3)
 
         def move(event):
             if selection["start"]:
-                x = selection["start"][0] - overlay.winfo_rootx()
-                y = selection["start"][1] - overlay.winfo_rooty()
-                canvas.coords(selection["rect"], x, y, event.x, event.y)
+                x, y = selection["start"]
+                end_x, end_y = display.cursor_position()
+                canvas.coords(selection["rect"], x - left, y - top, end_x - left, end_y - top)
+
+        def close_overlay():
+            self.capture_overlay = None
+            overlay.destroy()
 
         def finish(event):
             if not selection["start"]:
                 return
-            x1, y1 = selection["start"]
-            x2, y2 = event.x_root, event.y_root
-            overlay.destroy()
+            x1, y1, x2, y2 = selection_bounds(
+                selection["start"], display.cursor_position(), desktop,
+            )
+            close_overlay()
             if abs(x2 - x1) < 8 or abs(y2 - y1) < 8:
                 self.set_message("Capture cancelled — choose a larger area.")
                 return
             self.root.after(150, lambda: self.save_capture(min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)))
 
-        overlay.bind("<Escape>", lambda event: (overlay.destroy(), self.set_message("Capture cancelled.")))
+        overlay.bind("<Escape>", lambda event: (close_overlay(), self.set_message("Capture cancelled.")))
         canvas.bind("<ButtonPress-1>", begin)
         canvas.bind("<B1-Motion>", move)
         canvas.bind("<ButtonRelease-1>", finish)
+        overlay.deiconify()
+        display.place(overlay, desktop)
+        overlay.focus_force()
 
     def save_capture(self, x1, y1, x2, y2):
         try:
@@ -600,4 +624,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

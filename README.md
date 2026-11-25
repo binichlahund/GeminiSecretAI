@@ -47,6 +47,13 @@ The default text hotkey is `ctrl+alt+space`. The default image hotkey is
 `ctrl+alt+i`; it opens a capture overlay, where you drag over the part of the
 screen Gemini should analyze.
 
+Screen capture covers the full Windows virtual desktop, including monitors to
+the left or above the main display. Windows display scaling (125%, 150%, 200%)
+is handled in physical pixels so the selection matches the saved screenshot.
+The status dot sits at the bottom-right of the active monitor, above its taskbar.
+After updating, fully quit the running app and relaunch it: DPI awareness is
+configured when the Python process starts.
+
 Use the **System prompt** card in the control window to save standing instructions,
 such as preferred language, tone, or output format. It is prepended to every
 prompt sent through the hotkey. Keep it concise: it is sent again for each request.
@@ -64,4 +71,3 @@ Website automation depends on page selectors. The bridge tries several current s
 - `GEMINI_STABLE_SECONDS=0.8` — how long unchanged text is treated as a complete response
 
 Errors and diagnostics are in `gemini_hotkey.log`, `gemini_bridge.log`, and `gemini-debug`.
-
